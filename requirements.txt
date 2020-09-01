@@ -7,7 +7,6 @@ tqdm
 python-fcl 
 pyyaml 
 easydict 
-mayavi 
 scipy 
 matplotlib
 

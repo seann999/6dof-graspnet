@@ -52,7 +52,7 @@ from tensorflow.python.training.summary_io import SummaryWriterCache
 from grasp_data_reader import evaluate_grasps
 from utils import get_files, set_seed, make_parser
 
-tf.logging.set_verbosity(tf.logging.INFO)
+#tf.logging.set_verbosity(tf.logging.INFO)
 
 CONFIDENCES = [0.2, 0.4, 0.6, 0.7, 0.8, 0.9]
 

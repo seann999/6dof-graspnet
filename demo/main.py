@@ -101,16 +101,19 @@ def main(args):
     cfg['sample_based_improvement'] = 1 - int(args.gradient_based_refinement)
     cfg['num_refine_steps'] = 10 if args.gradient_based_refinement else 20
     estimator = grasp_estimator.GraspEstimator(cfg)
-    os.environ['CUDA_VISIBLE_DEVICES'] = str(cfg.gpu)
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0'#str(cfg.gpu)
+    print('starting session')
     sess = tf.Session()
+    print('building network')
     estimator.build_network()
+    print('loading weights')
     estimator.load_weights(sess)
 
     for npy_file in glob.glob(os.path.join(args.npy_folder, '*.npy')):
         print(npy_file)
         # Depending on your numpy version you may need to change allow_pickle
         # from True to False.
-        data = np.load(npy_file, allow_pickle=True).item()
+        data = np.load(npy_file, allow_pickle=True, encoding='latin1').item()
         print(data.keys())
         depth = data['depth']
         image = data['image']
@@ -134,15 +137,16 @@ def main(args):
             latents,
             num_refine_steps=cfg.num_refine_steps,
         )
-        mlab.figure(bgcolor=(1,1,1))
-        draw_scene(
-            pc,
-            pc_color=pc_colors,
-            grasps=generated_grasps,
-            grasp_scores=generated_scores,
-        )
+        #mlab.figure(bgcolor=(1,1,1))
+        #draw_scene(
+        #    pc,
+        #    pc_color=pc_colors,
+        #    grasps=generated_grasps,
+        #    grasp_scores=generated_scores,
+        #)
         print('close the window to continue to next object . . .')
-        mlab.show()
+        print(generated_scores)
+        #mlab.show()
 
     
 

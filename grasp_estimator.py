@@ -85,8 +85,6 @@ def joint_config(vae_folder, evaluator_folder='', dataset_root_folder='', eval_s
     if 'gan' in vae_cfg:
         args['gan'] = vae_cfg['gan']
 
-
-
     if dataset_root_folder != '':
         args['dataset_root_folder'] = dataset_root_folder
 
@@ -116,6 +114,9 @@ class GraspEstimator:
                              range(3)],
             'evaluator_grasp_translations': tf.placeholder(tf.float32, [self._num_samples, 3], name='sample_translation'),
         }
+
+        self.improve_delta = 0.02
+        self.improve_strict = False
 
 
     def load_weights(
@@ -329,7 +330,7 @@ class GraspEstimator:
             if sampling_type == 'metropolis':
                 improve_time = time.time()
                 delta_t = 2 * (np.random.rand(*translation.shape) - 0.5)
-                delta_t *= 0.02
+                delta_t *= self.improve_delta
                 delta_euler_angles = [(np.random.rand(*euler_angles[i].shape) - 0.5) * 2 * np.radians(0) for i in
                                       range(3)]
 
@@ -346,14 +347,15 @@ class GraspEstimator:
 
                 sess_time = time.time()
                 perturbed_success = sess.run(tf_success, feed_dict=fd)
-                print(time.time() - sess_time)
+                #print(time.time() - sess_time)
                 ratio = perturbed_success / np.maximum(metadata['last_success'], 0.0001)
 
                 next_success = metadata['last_success'].copy()
                 next_translation = translation.copy()
                 next_euler_angles = copy.deepcopy(euler_angles)
 
-                mask = np.random.rand(*ratio.shape) <= ratio
+                mask = (1 if self.improve_strict else np.random.rand(*ratio.shape)) <= ratio
+                #print('improve:', perturbed_success[0], metadata['last_success'][0], ratio[0], mask[0])
                 assert (len(mask.shape) == 2 and mask.shape[1] == 1), mask.shape
                 ind = np.where(mask)[0]
 
@@ -365,7 +367,7 @@ class GraspEstimator:
 
                 output = (copy.deepcopy(metadata['last_success']), next_translation, next_euler_angles)
                 metadata['last_success'] = next_success
-                print('time = ', improve_time - time.time())
+                print('time = ', -improve_time + time.time())
 
                 return output
             else:
@@ -397,10 +399,12 @@ class GraspEstimator:
             pc = regularize_pc_point_count(input_pc, self._cfg.npoints).copy()
         else:
             pc = input_pc.copy()
-        
+
+       
+        self.pc = pc.copy()
         pc_mean = np.mean(pc, 0)
         pc -= np.expand_dims(pc_mean, 0)
-        
+
         batch_size = self._cfg.num_samples
         if grasps_rt is not None:
             n = grasps_rt.shape[0]    
@@ -469,7 +473,8 @@ class GraspEstimator:
       base_to_camera_rt=None,
       grasps_rt=None,
     ):
-        
+        #print('MEAN:', pc.shape, pc[0])
+
         metadata = {'type': 'metropolis'}
         grasps = []
         scores = []

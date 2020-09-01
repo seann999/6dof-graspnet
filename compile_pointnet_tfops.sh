@@ -1,5 +1,5 @@
-CUDA_INCLUDE=' -I/usr/local/cuda-10.0/include/'
-CUDA_LIB=' -L/usr/local/cuda-10.0/lib64/'
+CUDA_INCLUDE=' -I/usr/local/cuda-10.1/include/'
+CUDA_LIB=' -L/usr/local/cuda-10.1/lib64/'
 TF_CFLAGS=$(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))')
 TF_LFLAGS=$(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))')
 cd ../pointnet2/tf_ops/sampling
@@ -11,7 +11,7 @@ g++ -std=c++11 -shared -o tf_sampling_so.so tf_sampling.cpp \
  tf_sampling_g.cu.o ${CUDA_INCLUDE} ${TF_CFLAGS} -fPIC -lcudart ${TF_LFLAGS} ${CUDA_LIB}
 
 echo 'testing sampling'
-python tf_sampling.py
+#python tf_sampling.py
  
 cd ../grouping
 
@@ -22,11 +22,11 @@ g++ -std=c++11 -shared -o tf_grouping_so.so tf_grouping.cpp \
  tf_grouping_g.cu.o ${CUDA_INCLUDE} ${TF_CFLAGS} -fPIC -lcudart ${TF_LFLAGS} ${CUDA_LIB}
 
 echo 'testing grouping'
-python tf_grouping_op_test.py
+#python tf_grouping_op_test.py
 
  
 cd ../3d_interpolation
 g++ -std=c++11 tf_interpolate.cpp -o tf_interpolate_so.so -shared -fPIC -shared -fPIC ${TF_CFLAGS} ${TF_LFLAGS} -O2
 echo 'testing interpolate'
-python tf_interpolate_op_test.py
+#python tf_interpolate_op_test.py
 

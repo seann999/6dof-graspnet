@@ -8,7 +8,6 @@ python-fcl
 pyyaml 
 easydict 
 mayavi 
-rtree 
 scipy 
 matplotlib
 
